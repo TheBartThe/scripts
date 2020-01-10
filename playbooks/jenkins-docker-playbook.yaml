@@ -100,8 +100,6 @@
     shell: |
             curl -L "https://github.com/docker/compose/releases/download/1.24.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
             chmod +x /usr/local/bin/docker-compose
-  - name: "display jenkins password"
-    shell: cat /var/lib/jenkins/secrets/initialAdminPassword
 
 - import_playbook: git-playbook.yaml
 
@@ -151,6 +149,58 @@
   - name: "initialise swarm"
     docker_swarm:
       state: present
+
+- name: "install docker compose"
+  hosts: all
+  become: yes
+  tasks:
+  - name: prerequisites
+    apt:
+      pkg:
+      - python3-pip
+      - python-pip
+      - git
+      state: latest
+      update_cache: yes
+  - name: "docker"
+    pip:
+      name: docker
+  - name: "json"
+    pip:
+      name: jsondiff
+  - name: "yaml"
+    pip:
+      name: pyyaml
+  - name: "install docker compose"
+    pip:
+      name: docker-compose
+  - name: "docker service"
+    service:
+      name: docker
+      state: started
+
+- name: "docker swarm deploy"
+  hosts: swarm-master
+  become: yes
+  tasks:
+    - name: "git clone"
+      git:
+        repo: "https://github.com/TheBartThe/assassinsGuild"
+        dest: /home/jenkins/assassin-app
+    - name: "init swarm"
+      docker_swarm:
+        state: present
+    - name: "build docker images"
+      docker_compose:
+        project_src: /home/jenkins/assassin-app
+        build: yes
+      remote_user: jenkins
+    - name: "deploy stack"
+      docker_stack:
+        state: present
+        name: assassin-application
+        compose:
+          - /home/jenkins/assassin-app/docker-compose.yaml
 
 - hosts: jenkins
   become: yes

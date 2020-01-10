@@ -1,4 +1,4 @@
-- hosts: jenkins
+- hosts: all
   tasks:
   - name: Install git
     become: true
@@ -6,7 +6,3 @@
       name: git
       state: latest
       update_cache: true
-  - name: Git clone repo
-    git:
-      repo: https://github.com/Matt25969/SelfReflection
-      dest: ~/gitTest
