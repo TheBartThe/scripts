@@ -1,12 +1,12 @@
 [jenkins]
-ansible-jenkins-ssh
+assassin-jenkins
 
 [docker]
-ansible-docker-ssh
-ansible-jenkins-ssh
+assassin-swarm-master
+assassin-jenkins
 
 [swarm-master]
-ansible-docker-ssh
+assassin-swarm-master
 
 [jenkins:vars]
 ansible_user=qa-admin
